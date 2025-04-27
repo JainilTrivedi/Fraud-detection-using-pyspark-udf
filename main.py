@@ -13,7 +13,8 @@ import numpy as np
 import pandas as pd
 import torch
 
-MODEL_PATH = "models/cnn.pt"
+MODEL_PATH_PYTORCH = "models/cnn.pt"
+MODEL_PATH_TENSORFLOW = "models/cnn.pt"
 
 # Create Spark session
 spark = SparkSession.builder.appName("FraudModelInference_Tables").getOrCreate()
@@ -33,10 +34,9 @@ idlabel_df.createOrReplaceTempView("idlabel")
 idmeta_df.createOrReplaceTempView("idmeta")
 
 
-################################  Defining UDF ##################################
 try:
     model = CNN()
-    model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(MODEL_PATH_PYTORCH, map_location=torch.device('cpu')))
     model.eval()
     print("Model loaded successfully.")
 except Exception as e:
@@ -60,6 +60,7 @@ def preprocess_image(base64_str):
         print(f"Preprocessing failed: {e}")
         return None
 
+#=== Defining UDF ===
 
 def cnn_fraud_detector(base64_str):
     if model is None:
@@ -85,22 +86,34 @@ fraud_udf = udf(cnn_fraud_detector, BooleanType())
 
 spark.udf.register("cnn_fraud_udf", cnn_fraud_detector, BooleanType())
 
-# spark.sql("""
-#     SELECT * FROM idimage LIMIT 5;
-# """).show()
+idimage_schema = spark.sql("""
+    SELECT * FROM idimage LIMIT 0;
+""")
+
+idlabel_schema = spark.sql("""
+    SELECT * FROM idlabel LIMIT 0;
+""")
+
+idmeta_schema = spark.sql("""
+    SELECT * FROM idmeta LIMIT 0;
+""")
+
+print("Schema for `idimage` table:")
+idimage_schema.printSchema()
+print("\n" + "="*5 + "\n")
+
+print("Schema for `idlabel` table:")
+idlabel_schema.printSchema()
+print("\n" + "="*5 + "\n")
+
+print("Schema for `idmeta` table:")
+idmeta_schema.printSchema()
+print("\n" + "="*5 + "\n")
+
 
 # spark.sql("""
-#     SELECT * FROM idlabel LIMIT 5;
+#     SELECT name, cnn_fraud_udf(imageData) as is_fraud
+#     FROM idimage
+#     LIMIT 5
 # """).show()
-
-# spark.sql("""
-#     SELECT * FROM idmeta LIMIT 5;
-# """).show()
-
-
-spark.sql("""
-    SELECT name, cnn_fraud_udf(imageData) as is_fraud
-    FROM idimage
-    LIMIT 5
-""").show()
 

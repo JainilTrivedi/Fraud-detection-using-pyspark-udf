@@ -1,9 +1,11 @@
 import torch.nn as nn
 
+
+IMAGE_SIZE = 128
 # === CNN Model ===
 class CNN(nn.Module):
     def __init__(self):
-        super(CNN, self)._init_()
+        super(CNN, self).__init__()
         self.net = nn.Sequential(
             nn.Conv2d(3, 16, 3, padding=1),  
             nn.ReLU(),
