@@ -7,7 +7,7 @@ class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
         self.net = nn.Sequential(
-            nn.Conv2d(3, 16, 3, padding=1),  
+            nn.Conv2d(3, 16, 3, padding=1),  # Input channels: 3 (RGB)
             nn.ReLU(),
             nn.MaxPool2d(2),
 
