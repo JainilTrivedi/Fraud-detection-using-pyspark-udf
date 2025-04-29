@@ -211,10 +211,6 @@ spark.sql("""
 
 
 
-
-
-
-
 print("""================  Ground Truth v/s Prediction ================""")
 spark.sql("""
     SELECT 
@@ -223,5 +219,7 @@ spark.sql("""
     JOIN idlabel l ON m.id = l.id
     JOIN idimage_pred p ON m.name = p.name
     WHERE l.isfraud <> p.predicted_fraud
+""").show()
 
-""")
+
+print("All queries ran successfully!!")
